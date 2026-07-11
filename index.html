@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BabyCare Store</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: { extend: { colors: { navy: "#1B263B", gold: "#C5A059" } } },
+      };
+    </script>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+    />
+    <style>
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .animate-fade {
+        animation: fadeIn 0.4s ease-out forwards;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-gray-50 dark:bg-slate-900 text-navy dark:text-white transition-all font-sans"
+  >
+    <div
+      id="toast"
+      class="fixed top-5 right-5 z-[99] hidden bg-gold text-white px-6 py-3 rounded-xl shadow-lg font-bold"
+    ></div>
+
+    <nav
+      class="bg-white dark:bg-navy shadow-md sticky top-0 z-40 border-b dark:border-slate-800"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <h1
+          class="text-xl font-black text-gold cursor-pointer uppercase tracking-tighter"
+          onclick="showSection('shop')"
+        >
+          BABYCARE
+        </h1>
+        <div class="flex items-center space-x-6">
+          <button id="dark-mode-toggle"><i class="fas fa-moon"></i></button>
+          <div
+            class="hidden md:flex space-x-6 text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400"
+          >
+            <button
+              onclick="showSection('shop')"
+              class="hover:text-gold transition"
+            >
+              Toko
+            </button>
+            <button
+              onclick="showSection('tracking')"
+              class="hover:text-gold transition"
+            >
+              Lacak
+            </button>
+            <button
+              onclick="showSection('history')"
+              class="hover:text-gold transition"
+            >
+              Riwayat
+            </button>
+            <div id="admin-panel-link"></div>
+          </div>
+          <div
+            class="relative cursor-pointer px-2"
+            onclick="showSection('cart')"
+          >
+            <i
+              class="fas fa-shopping-cart text-lg hover:text-gold transition"
+            ></i>
+            <span
+              id="cart-count"
+              class="absolute -top-2 -right-2 bg-gold text-white text-[10px] rounded-full h-4 w-4 flex items-center justify-center font-bold"
+              >0</span
+            >
+          </div>
+          <button
+            id="auth-btn"
+            onclick="handleAuthAction()"
+            class="bg-navy dark:bg-gold text-white px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-widest"
+          >
+            Login
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-10">
+      <section id="shop-section">
+        <div
+          class="mb-10 flex flex-col md:flex-row gap-4 items-center justify-between bg-white dark:bg-navy p-4 rounded-2xl shadow-sm border dark:border-slate-800"
+        >
+          <div class="relative w-full md:w-1/2">
+            <i
+              class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 opacity-30"
+            ></i>
+            <input
+              type="text"
+              id="product-search"
+              onkeyup="filterProducts()"
+              placeholder="Cari perlengkapan bayi..."
+              class="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 dark:bg-slate-800 border-none outline-none focus:ring-2 focus:ring-gold transition text-sm"
+            />
+          </div>
+          <div class="flex gap-2 w-full md:w-auto overflow-x-auto pb-2">
+            <button
+              onclick="filterCategory('all')"
+              class="category-btn bg-gold text-white px-5 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap"
+            >
+              Semua
+            </button>
+            <button
+              onclick="filterCategory('Pakaian')"
+              class="category-btn bg-gray-200 dark:bg-slate-800 px-5 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap"
+            >
+              Pakaian
+            </button>
+            <button
+              onclick="filterCategory('Perlengkapan Mandi')"
+              class="category-btn bg-gray-200 dark:bg-slate-800 px-5 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap"
+            >
+              Mandi
+            </button>
+            <button
+              onclick="filterCategory('Mainan')"
+              class="category-btn bg-gray-200 dark:bg-slate-800 px-5 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap"
+            >
+              Mainan
+            </button>
+            <button
+              onclick="filterCategory('Peralatan Makan')"
+              class="category-btn bg-gray-200 dark:bg-slate-800 px-5 py-2 rounded-lg text-xs font-bold uppercase whitespace-nowrap"
+            >
+              Makan
+            </button>
+          </div>
+        </div>
+        <div
+          id="product-container"
+          class="grid grid-cols-1 md:grid-cols-3 gap-8"
+        ></div>
+      </section>
+
+      <section id="cart-section" class="hidden max-w-2xl mx-auto">
+        <h2 class="text-2xl font-black mb-6 italic uppercase tracking-tighter">
+          Keranjang Belanja
+        </h2>
+        <div id="cart-items" class="space-y-4 mb-6"></div>
+        <div
+          class="bg-white dark:bg-navy p-6 rounded-xl shadow-md border dark:border-slate-800"
+        >
+          <div class="flex justify-between text-xl font-bold mb-4">
+            <span>Subtotal</span
+            ><span id="cart-total" class="text-gold">Rp 0</span>
+          </div>
+          <button
+            onclick="showSection('checkout')"
+            class="w-full bg-gold text-white py-4 rounded-xl font-bold uppercase shadow-lg active:scale-95 transition"
+          >
+            Lanjut ke Checkout
+          </button>
+        </div>
+      </section>
+
+      <section
+        id="checkout-section"
+        class="hidden max-w-md mx-auto bg-white dark:bg-navy p-8 rounded-2xl shadow-2xl"
+      >
+        <h2
+          class="text-xl font-black mb-6 text-center uppercase tracking-widest text-gold"
+        >
+          Konfirmasi Pesanan
+        </h2>
+        <div
+          class="bg-gray-100 dark:bg-slate-800 p-5 rounded-xl mb-6 space-y-2 border-l-4 border-gold text-xs"
+        >
+          <div class="flex justify-between font-bold opacity-50 uppercase">
+            <span>Subtotal:</span><span id="checkout-subtotal">Rp 0</span>
+          </div>
+          <div class="flex justify-between font-bold opacity-50 uppercase">
+            <span>Biaya Kirim:</span><span>Rp 20.000</span>
+          </div>
+          <hr class="border-gray-300 dark:border-slate-700" />
+          <div class="flex justify-between items-center pt-2">
+            <span class="font-black opacity-60 uppercase tracking-tighter"
+              >Total Bayar:</span
+            >
+            <h3 id="checkout-grand-total" class="text-2xl font-black text-gold">
+              Rp 0
+            </h3>
+          </div>
+        </div>
+        <form id="checkout-form" class="space-y-4">
+          <input
+            type="text"
+            id="checkout-name"
+            placeholder="Nama Lengkap Penerima"
+            class="w-full p-3 rounded-lg bg-gray-50 dark:bg-slate-800 border dark:border-slate-700 outline-none focus:ring-1 focus:ring-gold"
+            required
+          />
+          <input
+            type="tel"
+            id="checkout-phone"
+            placeholder="Nomor HP / WhatsApp"
+            class="w-full p-3 rounded-lg bg-gray-50 dark:bg-slate-800 border dark:border-slate-700 outline-none focus:ring-1 focus:ring-gold"
+            required
+          />
+          <textarea
+            id="checkout-address"
+            placeholder="Alamat Pengiriman Lengkap"
+            class="w-full p-3 rounded-lg bg-gray-50 dark:bg-slate-800 border dark:border-slate-700 outline-none focus:ring-1 focus:ring-gold"
+            rows="2"
+            required
+          ></textarea>
+          <select
+            id="checkout-payment"
+            onchange="toggleQRISInfo()"
+            class="w-full p-3 rounded-lg bg-gray-50 dark:bg-slate-800 border dark:border-slate-700 outline-none font-bold text-sm"
+            required
+          >
+            <option value="" disabled selected>Pilih Pembayaran</option>
+            <option value="Transfer Bank">Transfer Bank</option>
+            <option value="COD">Bayar di Tempat (COD)</option>
+            <option value="QRIS">QRIS (Otomatis Barcode)</option>
+          </select>
+          <div
+            id="qris-area"
+            class="hidden text-center p-4 bg-white rounded-xl border-2 border-dashed border-gold"
+          >
+            <img
+              src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=BabyCarePayment"
+              class="mx-auto mb-2 shadow-md"
+            />
+            <p class="text-[9px] font-bold text-navy uppercase italic">
+              Scan QRIS BabyCare
+            </p>
+          </div>
+          <button
+            type="submit"
+            class="w-full bg-navy dark:bg-gold text-white py-4 rounded-xl font-black uppercase shadow-xl mt-4 active:scale-95 transition tracking-widest"
+          >
+            Pesan Sekarang
+          </button>
+        </form>
+      </section>
+
+      <section
+        id="tracking-section"
+        class="hidden max-w-md mx-auto text-center"
+      >
+        <h2
+          class="text-xl font-black mb-6 italic uppercase tracking-widest text-gold"
+        >
+          Lacak Paket
+        </h2>
+        <div class="flex gap-2 mb-8">
+          <input
+            type="text"
+            id="tracking-input"
+            placeholder="Tempel Nomor Resi..."
+            class="w-full p-4 rounded-xl bg-white dark:bg-navy shadow-lg border dark:border-slate-700 outline-none focus:ring-2 focus:ring-gold"
+          />
+          <button
+            onclick="trackPackage()"
+            class="bg-gold text-white px-6 rounded-xl shadow-lg transition active:scale-90"
+          >
+            <i class="fas fa-search"></i>
+          </button>
+        </div>
+        <div id="tracking-result"></div>
+      </section>
+
+      <section id="history-section" class="hidden max-w-2xl mx-auto space-y-4">
+        <h2
+          class="text-xl font-black mb-6 italic uppercase border-b-2 border-gold inline-block tracking-tighter"
+        >
+          Riwayat Transaksi
+        </h2>
+        <div id="history-list" class="space-y-4"></div>
+      </section>
+
+      <section
+        id="auth-section"
+        class="hidden max-w-sm mx-auto bg-white dark:bg-navy p-10 rounded-2xl shadow-2xl text-center border dark:border-slate-800"
+      >
+        <h2
+          id="auth-title"
+          class="text-2xl font-black mb-8 uppercase tracking-widest text-gold"
+        >
+          Login Akun
+        </h2>
+        <form id="auth-form" class="space-y-5 text-left">
+          <input
+            type="email"
+            id="auth-email"
+            placeholder="Email"
+            class="w-full p-3 rounded-lg bg-gray-50 dark:bg-slate-800 border dark:border-slate-700 outline-none"
+            required
+          />
+          <input
+            type="password"
+            id="auth-password"
+            placeholder="Password"
+            class="w-full p-3 rounded-lg bg-gray-50 dark:bg-slate-800 border dark:border-slate-700 outline-none"
+            required
+          />
+          <button
+            type="submit"
+            class="w-full bg-gold text-white py-4 rounded-xl font-black uppercase shadow-lg"
+          >
+            Masuk
+          </button>
+        </form>
+        <button
+          onclick="toggleAuthMode()"
+          class="mt-8 text-xs opacity-50 underline uppercase font-bold tracking-widest hover:text-gold transition"
+        >
+          Belum punya akun? Daftar
+        </button>
+      </section>
+    </main>
+
+    <script src="app.js"></script>
+  </body>
+</html>
